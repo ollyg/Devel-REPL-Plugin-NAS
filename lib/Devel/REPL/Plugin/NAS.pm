@@ -1,7 +1,7 @@
 package Devel::REPL::Plugin::NAS;
 use Devel::REPL::Plugin;
 
-our $VERSION = 0.0002_01;
+our $VERSION = 0.005;
 # $Id$
 
 use namespace::clean except => ['meta'];
@@ -338,7 +338,7 @@ Devel::REPL::Plugin::NAS - Add Perl to your network devices' command line interf
 
 =head1 VERSION
 
-This document refers to version 0.0002_01 of Devel::REPL::Plugin::NAS
+This document refers to version 0.005 of Devel::REPL::Plugin::NAS
 
 =head1 WARNING
 
@@ -353,69 +353,144 @@ subversion repository, as it contains many updates to the version on CPAN.
 
 Whilst running an automated interactive session on a network device (e.g.  a
 router) using L<Net::Appliance::Session>, the device may throw an error. You
-can be dropped into a 'shell' on the device, for manual debugging, but the
-shell also has Perl bells and whistles.
+can then be dropped into a 'shell' on the device, for manual debugging, but
+the shell also has Perl bells and whistles.
 
 Alternatively, if used standalone, this module makes it seem like your network
 device manufacturer embedded Perl in their device's CLI. That's pretty cool.
 
 =head1 SYNOPSIS
 
+A REPL is a 'shell' for a dynamic language. One of Perl's REPLs is
+L<Devel::REPL>; it supports 'macros' which begin with a C<#> character.
+
  my $repl = Devel::REPL->new;
  $repl->load_plugin('NAS');
  $repl->run;
  
-You're now at a Devel::REPL shell.
- 
- re.pl:001:0> 3+3
- 6
+ re.pl:001:0> print "Hello, World";
+ Hello World
  
  re.pl:002:0> #nas_connect hostname.example username password
  $Net_Appliance_Session1 = Net::Appliance::Session=GLOB(0x92165ac);
- 
-You're now conected via SSH to the device and at its CLI.
  
  TEST_3750# show int status | incl 15
  Fa1/0/15  OWL visitor        notconnect   97           auto   auto 10/100BaseTX
  
  TEST_3750# conf t
  Enter configuration commands, one per line.  End with CNTL/Z.
-
+ 
  TEST_3750(config)# exit
  
-Run a one-off perl command:
-
- TEST_3750# #perl 3+6
- 9
-
-Switch to Perl mode:
-
+ TEST_3750# #perl print "Hello again, World";
+ Hello again, World
+ 
  TEST_3750# #nas_perl
  Switched into Perl mode.
  re.pl:008:0> 3+9
  12
-
-Run a one-off command on the device:
-
+ 
  re.pl:009:0> #nas show int status | incl 14
  Fa1/0/14  OWL VPN            notconnect   98           auto   auto 10/100BaseTX
-
-Use a Quoted Command operator to run device comands from within Perl code:
-
+ 
  re.pl:010:0> my @output = qc{ show int status };
-
-Switch back to device command mode:
-
+ 
  re.pl:011:0> #nas_cli
  Switched into NAS CLI mode.
  TEST_3750# 
 
-Press C<control+d> to cleanly disconnect, from Perl or NAS CLI mode.
+Press C<Control+d> to cleanly disconnect, from Perl or NAS CLI mode.
 
 =head1 DESCRIPTION
 
+There is a module, L<Net::Appliance::Session> (NAS), which allows you to
+automate interactive sessions with a network device CLI (e.g. a router or
+switch). It's like a smarter and more Perlish version of Expect. A couple of
+users asked me whether NAS could provide better handling of errors received
+from the remote device, rather than simply die'ing.
+
+Around the same time, I was reading about Cisco having included the tcl
+scripting language in their IOS software, and thinking about an IOS with an
+embedded Perl. Time passed, and then I started playing with the L<Devel::REPL>
+interactive shell for Perl, and realised there was the potential to create a
+Perl/NAS shell.
+
+This module is a plugin for C<Devel::REPL> which allows the one shell to be
+used for both Perl commands as well as sending commands to a device connected
+via C<Net::Appliance::Session>. There is special support for managing the
+connection to your device, and easily issueing commands either to Perl or the
+device, in succession, or combining the two to grab NAS output into Perl
+variables.
 
 =head1 USAGE
+
+Load up the plugin either by including it in your C<repl.rc> file, or running
+the following small Perl program:
+
+ my $repl = Devel::REPL->new;
+ $repl->load_plugin('NAS');
+ $repl->run;
+
+At this point you'll be at the REPL shell, which has a funny-looking prompt
+telling you the line number and script name. You can issue any Perl syntax
+here to be executed, including multi-line statements (e.g. C<for> loops),
+loading of modules, and so on. Lexical variables (created using C<my>) will
+persist as long as the shell is running.
+
+ re.pl:001:0> print "Hello, World";
+ Hello World
+ 
+Once you're done with seeing how cool that is, you can make a connection to
+your network device using a C<Devel::REPL> I<macro> (stricty, known as a
+I<turtle>). REPL macros begin with the C<#> character, and sometimes take
+command arguments; in this case the hostname, username and password:
+
+ re.pl:002:0> #nas_connect hostname.example username password
+ $Net_Appliance_Session1 = Net::Appliance::Session=GLOB(0x92165ac);
+
+You are shown the return value of the statement, which happens in this case to
+be a C<Net::Appliance::Session> object, if the connection was successful.
+You'll get an error message if the connection wasn't successful:
+
+ re.pl:002:0> #nas_connect hostname.example username notmypassword
+ Error returned from Net::Appliance::Session!
+  Last command sent: 
+  Last response    : Permission denied, please try again.
+  Fault Description: Login failed to remote host at (eval 230) line 8
+  Net::Telnet error: pattern match timed-out
+
+At this point, the REPL switches from I<Perl mode> into I<NAS CLI mode>. It's
+the same REPL process, but your commands are sent straight to the network
+device, rather than being interpreted as Perl. The prompt also changes:
+
+ TEST_3750# show int status | incl 15
+ Fa1/0/15  OWL visitor        notconnect   97           auto   auto 10/100BaseTX
+ 
+ TEST_3750# conf t
+ Enter configuration commands, one per line.  End with CNTL/Z.
+ 
+ TEST_3750(config)#
+
+To disconnect from the device and quit the REPL in one go, hit C<Control+d>.
+To just disconnect from the device but remain at the REPL shell in Perl mode,
+use the following macro (from either NAS CLI or Perl mode):
+
+ TEST_3750(config)# #nas_disconnect
+ Closing Net::Appliance::Session connection.
+
+=head1 FEATURES AND AVAILABLE COMMANDS
+
+If that were all there was to it, you may as well be using SSH directly. But
+no, as mentioned above, you can issue Perl from within NAS CLI mode, issue
+network device commands from within Perl mode, and more.
+
+=head2 Switching between Perl and NAS CLI mode
+
+There are two macros for moving between Perl and NAS CLI mode. To clarify, the
+mode is only setting how the REPL treats a command received - is it to be
+interpreted as Perl, or sent to the network device. You can still perform the
+I<other> kind of command from either mode, as we'll see in the next section.
+
 
 
 =head1 CAVEATS
