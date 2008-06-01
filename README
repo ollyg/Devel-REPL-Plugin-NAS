@@ -1,0 +1,115 @@
+NAME
+    Devel::REPL::Plugin::NAS - Add Perl to your network devices' command
+    line interfaces
+
+VERSION
+    This document refers to version 0.0001_01 of Devel::REPL::Plugin::NAS
+
+WARNING
+    This is an *ALPHA RELEASE*. I'd really appreciate any bug reports; you
+    can use the CPAN RT bug tracking system, or email me directly at the
+    address at the bottom of this page.
+
+    You probably also want to download the latest "Devel::REPL" code from
+    its subversion repository, as it contains many updates to the version on
+    CPAN.
+
+PURPOSE
+    Whilst running an automated interactive session on a network device
+    (e.g. a router) using Net::Appliance::Session, the device may throw an
+    error. You can be dropped into a 'shell' on the device, for manual
+    debugging, but the shell also has Perl bells and whistles.
+
+    Alternatively, if used standalone, this module makes it seem like your
+    network device manufacturer embedded Perl in their device's CLI. That's
+    pretty cool.
+
+SYNOPSIS
+     my $repl = Devel::REPL->new;
+     $repl->load_plugin('NAS');
+     $repl->run;
+ 
+    You're now at a Devel::REPL shell.
+
+     re.pl:001:0> 3+3
+     6
+ 
+     re.pl:002:0> #nas_connect hostname.example username password
+     $Net_Appliance_Session1 = Net::Appliance::Session=GLOB(0x92165ac);
+ 
+    You're now conected via SSH to the device and at its CLI.
+
+     TEST_3750# show int status | incl 15
+     Fa1/0/15  OWL visitor        notconnect   97           auto   auto 10/100BaseTX
+ 
+     TEST_3750# conf t
+     Enter configuration commands, one per line.  End with CNTL/Z.
+
+     TEST_3750(config)# exit
+ 
+    Run a one-off perl command:
+
+     TEST_3750# #perl 3+6
+     9
+
+    Switch to Perl mode:
+
+     TEST_3750# #nas_perl
+     Switched into Perl mode.
+     re.pl:008:0> 3+9
+     12
+
+    Run a one-off command on the device:
+
+     re.pl:009:0> #nas show int status | incl 14
+     Fa1/0/14  OWL VPN            notconnect   98           auto   auto 10/100BaseTX
+
+    Use a Quoted Command operator to run device comands from within Perl
+    code:
+
+     re.pl:010:0> my @output = qc{ show int status };
+
+    Switch back to device command mode:
+
+     re.pl:011:0> #nas_cli
+     Switched into NAS CLI mode.
+     TEST_3750# 
+
+    Press "control+d" to cleanly disconnect, from Perl or NAS CLI mode.
+
+DESCRIPTION
+USAGE
+CAVEATS
+TODO
+    Fix command output, as it suffers from the 'stringified list indent'
+    issue.
+
+REQUIREMENTS
+    Other than the standard contents of the Perl distribution, you will
+    need:
+
+    Devel::REPL
+    Net::Appliance::Session
+
+AUTHOR
+    Oliver Gorwits "<oliver.gorwits@oucs.ox.ac.uk>"
+
+ACKNOWLEDGEMENTS
+    All the helpful people in "#moose" on IRC.
+
+COPYRIGHT & LICENSE
+    Copyright (c) Oliver Gorwits 2008. All Rights Reserved.
+
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of version 2 of the GNU General Public License as
+    published by the Free Software Foundation.
+
+    This program is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+    Public License for more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+
