@@ -351,7 +351,7 @@ subversion repository, as it contains many updates to the version on CPAN.
 
 =head1 PURPOSE
 
-Whilst running an automated interactive session on a network device (e.g.  a
+Whilst running an automated interactive session on a network device (e.g. a
 router) using L<Net::Appliance::Session>, the device may throw an error. You
 can then be dropped into a 'shell' on the device, for manual debugging, but
 the shell also has Perl bells and whistles.
@@ -361,46 +361,10 @@ device manufacturer embedded Perl in their device's CLI. That's pretty cool.
 
 =head1 SYNOPSIS
 
-A REPL is a 'shell' for a dynamic language. One of Perl's REPLs is
-L<Devel::REPL>; it supports 'macros' which begin with a C<#> character.
-
  my $repl = Devel::REPL->new;
  $repl->load_plugin('NAS');
  $repl->run;
  
- re.pl:001:0> print "Hello, World";
- Hello World
- 
- re.pl:002:0> #nas_connect hostname.example username password
- $Net_Appliance_Session1 = Net::Appliance::Session=GLOB(0x92165ac);
- 
- TEST_3750# show int status | incl 15
- Fa1/0/15  OWL visitor        notconnect   97           auto   auto 10/100BaseTX
- 
- TEST_3750# conf t
- Enter configuration commands, one per line.  End with CNTL/Z.
- 
- TEST_3750(config)# exit
- 
- TEST_3750# #perl print "Hello again, World";
- Hello again, World
- 
- TEST_3750# #nas_perl
- Switched into Perl mode.
- re.pl:008:0> 3+9
- 12
- 
- re.pl:009:0> #nas show int status | incl 14
- Fa1/0/14  OWL VPN            notconnect   98           auto   auto 10/100BaseTX
- 
- re.pl:010:0> my @output = qc{ show int status };
- 
- re.pl:011:0> #nas_cli
- Switched into NAS CLI mode.
- TEST_3750# 
-
-Press C<Control+d> to cleanly disconnect, from Perl or NAS CLI mode.
-
 =head1 DESCRIPTION
 
 There is a module, L<Net::Appliance::Session> (NAS), which allows you to
@@ -487,14 +451,97 @@ network device commands from within Perl mode, and more.
 =head2 Switching between Perl and NAS CLI mode
 
 There are two macros for moving between Perl and NAS CLI mode. To clarify, the
-mode is only setting how the REPL treats a command received - is it to be
-interpreted as Perl, or sent to the network device. You can still perform the
-I<other> kind of command from either mode, as we'll see in the next section.
+mode is only setting the default action for commands received by the REPL
+shell - whether they are interpreted as Perl, or sent to the network device.
+You can still perform the I<other> kind of command from either mode, as we'll
+see in the next section.
 
+To switch from Perl mode to NAS CLI mode:
 
+ re.pl:008:0> #nas_cli
+ Switched into NAS CLI mode.
+ TEST_3750# show int status
+ 
+To switch from NAS CLI mode to Perl mode:
 
-=head1 CAVEATS
+ TEST_3750# #nas_perl
+ Switched into Perl mode.
+ re.pl:011:0> print "Hello, world"
 
+=head2 One-off commands in an alternate mode
+
+If you're in NAS CLI mode, and you want to run a quick bit of Perl (remember,
+all lexical variable persist, which is handy), then use the C<#perl> macro:
+
+ TEST_3750# #perl print "Hello again, World";
+ Hello again, World
+
+Likewise, to send a command to the network device when you're in Perl mode,
+use the C<#nas> macro:
+
+ re.pl:012:0> #nas show int status | incl 14
+ Fa1/0/14  OWL VPN            notconnect   98           auto   auto 10/100BaseTX
+
+As you can see, by default the output from the command is printed out to the
+shell. There's an option to suppress this, if you want, which is enabled by
+adding a flag C<-noout> to the macro, like so:
+
+ re.pl:013:0> #nas -noout show int status | incl 14
+ re.pl:014:0>
+
+=head2 The Quoted (interpolated) Command operator
+
+Let's say you want to run a command on your network device, and store the
+results of that in an array. So far we've only seen how to use I<either> Perl
+mode I<or> NAS CLI mode. The Quoted (interpolated) Command operator is a
+convenience feature to help you out in this situation.
+
+This operator is just like the other Perl quote-like operators such as C<q{}>,
+C<qx{}>, and C<qq{}>, except that it is C<qc{}> (for Quoted Command). The same
+rules apply for substituting the curly brace characters as do for the other
+Perl quote-like operators, which is handy. Here is an example:
+
+ re.pl:015:0> my @output = qc{ show int status }
+
+=head2 Command results cache
+
+This module will store the output from all Perl and network device commands in
+a cache. This is very useful should you want to post-process any of the data
+output by a command.
+
+By default all output is stored in array context, which means that if there
+are many lines returned each one goes into an element of an array, and a
+reference to I<that> array gets stored in the cache.
+
+If you'd prefer to have the output from a network device command stored as one
+big scalar (all the lines joined together), then this is possible via the
+C<#nas> macro, by adding the C<-array> flag, like so:
+
+ re.pl:016:0> #nas -array show int status
+
+The output cache itself, including all Perl and NAS CLI mode output, is
+available via the C<< $_REPL->output_cache >> array reference. The most recent
+command's output is available via the C<_> REPL magic variable (no sigil!).
+
+=head2 Accessing the C<Net::Appliance::Session> object
+
+Simply, this is available as C<$s> in your REPL shell. That means it's a good
+idea not to create a lexical scalar variable of the same name. Note that C<$s>
+will not exist when there isn't an instantiated object to store, for example
+before issueing the C<#nas_connect> macro or after issueing the C<#disconnect>
+macro.
+
+One handy thing to do if you're really stuck is drop to lower level testing:
+
+ re.pl:017:0> $s->input_log ( *STDOUT )
+ *main::STDOUT
+ 
+ re.pl:018:0> $s->cmd('show int status | incl 15');
+ show int status | incl 15
+ Fa1/0/15  OWL visitor        notconnect   97           auto   auto 10/100BaseTX
+ TEST_3750#Fa1/0/15  OWL visitor        notconnect   97           auto   auto 10/100BaseTX
+ 
+ re.pl:019:0> 
 
 =head1 TODO
 
@@ -502,6 +549,12 @@ I<other> kind of command from either mode, as we'll see in the next section.
 
 =item Fix command output, as it suffers from the 'stringified list indent'
 issue.
+
+=item Currently no way to specify the C<Net::Appliance::Session> Transport
+when using the connect macro.
+
+=item There's also no way to specify the NAS Phrasebook, which means it
+defaults to Cisco IOS.
 
 =back
 
