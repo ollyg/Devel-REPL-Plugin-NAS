@@ -1,3 +1,9 @@
+libdevel-repl-plugin-nas-perl (0.000201-1) unstable; urgency=low
+
+  *  Fix for PAUSE spotting rogue package.
+
+ -- Oliver Gorwits <oliver.gorwits@oucs.ox.ac.uk>  Sun,  1 Jun 2008 16:24:22 +0100
+
 libdevel-repl-plugin-nas-perl (0.000101-1) unstable; urgency=low
 
   * Initial Release.

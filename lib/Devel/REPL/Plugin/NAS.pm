@@ -1,7 +1,7 @@
 package Devel::REPL::Plugin::NAS;
 use Devel::REPL::Plugin;
 
-our $VERSION = 0.0001_01;
+our $VERSION = 0.0002_01;
 # $Id$
 
 use namespace::clean except => ['meta'];
@@ -20,7 +20,8 @@ BEGIN {
         };
     }
 
-    package StringWithNewline;
+    package # hide from PAUSE
+        StringWithNewline;
     use Moose::Util::TypeConstraints;
     
     subtype 'StringWithNewline'
@@ -337,7 +338,7 @@ Devel::REPL::Plugin::NAS - Add Perl to your network devices' command line interf
 
 =head1 VERSION
 
-This document refers to version 0.0001_01 of Devel::REPL::Plugin::NAS
+This document refers to version 0.0002_01 of Devel::REPL::Plugin::NAS
 
 =head1 WARNING
 
