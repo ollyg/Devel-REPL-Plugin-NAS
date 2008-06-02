@@ -1,0 +1,22 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings FATAL => 'all';
+
+use Devel::REPL;
+use IO::Prompt;
+
+die "usage: $0 hostname\n" if scalar @ARGV == 0;
+
+my $hostname = $ARGV[0];
+@ARGV = (); # IO::Prompt gets confused
+
+my $username = prompt( "Username: ", -default => $ENV{USER} );
+my $password = prompt( "Password: ", -echo => '*' );
+
+my $repl = Devel::REPL->new;
+$repl->load_plugin('NAS');
+my @out = $repl->formatted_eval("#nas_connect $hostname $username $password");
+$repl->print(@out);
+$repl->run;
+

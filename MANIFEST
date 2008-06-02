@@ -5,3 +5,5 @@ INSTALL
 Makefile.PL
 Changes
 META.yml
+examples/ssh.pl
+examples/run.pl

@@ -1,7 +1,7 @@
 package Devel::REPL::Plugin::NAS;
 use Devel::REPL::Plugin;
 
-our $VERSION = 0.005;
+our $VERSION = 0.0501;
 # $Id$
 
 use namespace::clean except => ['meta'];
@@ -75,6 +75,10 @@ sub AFTER_PLUGIN {
             (.*)                # pass
         /x
     );
+
+    $self->formatted_eval('use Net::Appliance::Session');
+    $self->fancy_prompt(\&nas_prompt);
+    $self->fancy_continuation_prompt(\&nas_continuation_prompt);
 }
 
 # used by format_error to show the last command sent
@@ -112,7 +116,8 @@ has 'nas_display_command_response' => (
 sub munge_qc {
     my ($self, $code) = @_;
 
-    my $doc = PPI::Document->new(\$code);
+    my $doc = PPI::Document->new(\$code)
+        or return '';
     my $quotes = $doc->find('Token::Quote::Interpolate') || [];
     foreach my $tok ( @$quotes ) {
         next if $tok !~ m/^qc(.)(.*)(.)/s; # weak, FIXME
@@ -170,8 +175,11 @@ sub command_nas_connect {
     my ( $self, $feval, $host, $user, $pass ) = @_;
     die unless $host;
 
+    my $s = $self->get_nas_session;
+    my $my = (blessed($s) ? '' : 'my ');
+
     my @ret = $self->$feval(qq#
-        my \$s = Net::Appliance::Session->new('$host');
+        $my \$s = Net::Appliance::Session->new('$host');
         \$s->connect(Name => '$user', Password => '$pass');
     #);
     $self->nas_cli_mode(1);
@@ -285,14 +293,9 @@ sub get_nas_session {
     return $s;
 }
 
-# before and after main run loop, set NAS environment, etc
-around 'run' => sub {
-    my ( $orig, $self, @args ) = @_;
-
-    $self->fancy_prompt(\&nas_prompt);
-    $self->fancy_continuation_prompt(\&nas_continuation_prompt);
-    $self->formatted_eval('use Net::Appliance::Session');
-    $self->$orig(@args);
+# after running main loop, cleanly disconnect
+after 'run' => sub {
+    my $self = shift;
     $self->nas_disconnect;
 };
 
@@ -302,7 +305,13 @@ sub nas_prompt {
     if ($self->nas_cli_mode) {
         my $s = $self->get_nas_session;
         return 'not_connected> ' if !blessed($s);
-        return $s->last_prompt .' ';
+        if (my $last = $s->last_prompt) {
+            return "$last ";
+        }
+        else {
+            $self->nas_disconnect;
+            return 'not_connected> ';
+        }
     }
     return sprintf 're.pl:%03d%s> ',
                    $self->lines_read,
@@ -322,7 +331,8 @@ sub nas_disconnect {
     my $fh = $self->out_fh;
 
     if (blessed($self->get_nas_session)) {
-        print $fh "\nClosing Net::Appliance::Session connection.\n";
+        print $fh "Closing Net::Appliance::Session connection.\n";
+        $self->nas_cli_mode(0);
         return $self->eval('$s->close');
     }
     $self->print("\n");
@@ -338,7 +348,7 @@ Devel::REPL::Plugin::NAS - Add Perl to your network devices' command line interf
 
 =head1 VERSION
 
-This document refers to version 0.005 of Devel::REPL::Plugin::NAS
+This document refers to version 0.0501 of Devel::REPL::Plugin::NAS
 
 =head1 WARNING
 

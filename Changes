@@ -1,3 +1,11 @@
+libdevel-repl-plugin-nas-perl (0.0501-1) unstable; urgency=low
+
+  * Much more documentation.
+  * Minor code bug fixes (prompt handling, disconnection, run wrapper)
+  * Added example scripts
+
+ -- Oliver Gorwits <oliver.gorwits@oucs.ox.ac.uk>  Mon,  2 Jun 2008 01:06:27 +0100
+
 libdevel-repl-plugin-nas-perl (0.000201-1) unstable; urgency=low
 
   *  Fix for PAUSE spotting rogue package.
