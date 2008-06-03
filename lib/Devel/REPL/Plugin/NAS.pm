@@ -1,7 +1,7 @@
 package Devel::REPL::Plugin::NAS;
 use Devel::REPL::Plugin;
 
-our $VERSION = 0.0501;
+our $VERSION = 0.0601;
 # $Id$
 
 use namespace::clean except => ['meta'];
@@ -348,7 +348,7 @@ Devel::REPL::Plugin::NAS - Add Perl to your network devices' command line interf
 
 =head1 VERSION
 
-This document refers to version 0.0501 of Devel::REPL::Plugin::NAS
+This document refers to version 0.0601 of Devel::REPL::Plugin::NAS
 
 =head1 WARNING
 
@@ -478,6 +478,23 @@ To switch from NAS CLI mode to Perl mode:
  Switched into Perl mode.
  re.pl:011:0> print "Hello, world"
 
+=head2 The Quoted (interpolated) Command operator
+
+Let's say you want to run a command on your network device, and store the
+results of that in an array. So far we've only seen how to use I<either> Perl
+mode I<or> NAS CLI mode. The Quoted (interpolated) Command operator is a
+convenience feature to help you out in this situation.
+
+This operator is just like the other interpolated Perl quote-like operators
+such as C<qx{}> and C<qq{}>, except that it is C<qc{}> (for Quoted Command).
+The same rules apply for substituting the curly brace characters as do for the
+other Perl quote-like operators. Here is an example:
+
+ re.pl:015:0> my @output = qc{ show int status }
+
+I've found this to be one of the most useful features - being able to grab
+command output and munge it in Perl, whilst keeping the remote session open.
+
 =head2 One-off commands in an alternate mode
 
 If you're in NAS CLI mode, and you want to run a quick bit of Perl (remember,
@@ -498,20 +515,6 @@ adding a flag C<-noout> to the macro, like so:
 
  re.pl:013:0> #nas -noout show int status | incl 14
  re.pl:014:0>
-
-=head2 The Quoted (interpolated) Command operator
-
-Let's say you want to run a command on your network device, and store the
-results of that in an array. So far we've only seen how to use I<either> Perl
-mode I<or> NAS CLI mode. The Quoted (interpolated) Command operator is a
-convenience feature to help you out in this situation.
-
-This operator is just like the other Perl quote-like operators such as C<q{}>,
-C<qx{}>, and C<qq{}>, except that it is C<qc{}> (for Quoted Command). The same
-rules apply for substituting the curly brace characters as do for the other
-Perl quote-like operators, which is handy. Here is an example:
-
- re.pl:015:0> my @output = qc{ show int status }
 
 =head2 Command results cache
 
