@@ -9,9 +9,15 @@ WriteMakefile(
     VERSION_FROM      => 'lib/Devel/REPL/Plugin/NAS.pm', # finds $VERSION
     PREREQ_PM         => {
         Devel::REPL => 0,
-        Net::Appliance::Session => 0,
+        Net::Appliance::Session => 1.23,
     },
+
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
-      (ABSTRACT       => 'Add Perl to your network devices\' command line interfaces',
+      (ABSTRACT_FROM  => 'lib/Devel/REPL/Plugin/NAS.pm',
        AUTHOR         => 'Oliver Gorwits <oliver.gorwits@oucs.ox.ac.uk>') : ()),
+
+    dist        => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
+    clean       => { FILES => 'Devel-REPL-Plugin-NAS-*' },
+    realclean   => { FILES => 'Makefile.old' },
+    EXE_FILES   => [ 'usr/bin/nas' ],
 );

@@ -1,3 +1,13 @@
+libdevel-repl-plugin-nas-perl (0.0601-1) unstable; urgency=low
+
+  * Added program 'nsh' which is an ssh replacement using this module
+  * Command completion works when in NAS CLI mode!
+  * Small documentation tweaks
+  * Fixed the interpolated list indent bug (bit of a hack sadly)
+  * Attempt to load File::Slurp, because it's very useful
+
+ -- Oliver Gorwits <oliver.gorwits@oucs.ox.ac.uk>  Tue,  3 Jun 2008 16:12:15 +0100
+
 libdevel-repl-plugin-nas-perl (0.0501-1) unstable; urgency=low
 
   * Much more documentation.

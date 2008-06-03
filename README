@@ -3,7 +3,7 @@ NAME
     line interfaces
 
 VERSION
-    This document refers to version 0.0501 of Devel::REPL::Plugin::NAS
+    This document refers to version 0.0601 of Devel::REPL::Plugin::NAS
 
 WARNING
     This is an *ALPHA RELEASE*. I'd really appreciate any bug reports; you
@@ -28,7 +28,29 @@ SYNOPSIS
      my $repl = Devel::REPL->new;
      $repl->load_plugin('NAS');
      $repl->run;
+
+    Or,
+
+     $> /usr/bin/nsh hostname.example.com
+     Username [oliver]:
+     Password: 
+     Net::Appliance::Session=GLOB(0x8e7db7c)
  
+     TEST_3750# dir flash:
+     Directory of flash:/
+ 
+         4  -rwx        7874  May 22 2008 11:43:53 +01:00  config.text
+       459  drwx         192  Jan 31 2007 15:53:38 +00:00  c3750-ipbasek9-mz.122-25.SEE2
+     15998976 bytes total (6618624 bytes free)
+ 
+     TEST_3750# #nas_perl
+     Switched into Perl mode.
+     re.pl:003:0> write_file ('config.text', qc{more flash:config.text});
+     1
+     re.pl:004:0> ^D
+     Closing Net::Appliance::Session connection.
+     $> 
+
 DESCRIPTION
     There is a module, Net::Appliance::Session (NAS), which allows you to
     automate interactive sessions with a network device CLI (e.g. a router
@@ -132,6 +154,24 @@ FEATURES AND AVAILABLE COMMANDS
      Switched into Perl mode.
      re.pl:011:0> print "Hello, world"
 
+  The Quoted (interpolated) Command operator
+    Let's say you want to run a command on your network device, and store
+    the results of that in an array. So far we've only seen how to use
+    *either* Perl mode *or* NAS CLI mode. The Quoted (interpolated) Command
+    operator is a convenience feature to help you out in this situation.
+
+    This operator is just like the other interpolated Perl quote-like
+    operators such as "qx{}" and "qq{}", except that it is "qc{}" (for
+    Quoted Command). The same rules apply for substituting the curly brace
+    characters as do for the other Perl quote-like operators. Here is an
+    example:
+
+     re.pl:015:0> my @output = qc{ show int status }
+
+    I've found this to be one of the most useful features - being able to
+    grab command output and munge it in Perl, whilst keeping the remote
+    session open.
+
   One-off commands in an alternate mode
     If you're in NAS CLI mode, and you want to run a quick bit of Perl
     (remember, all lexical variable persist, which is handy), then use the
@@ -152,20 +192,6 @@ FEATURES AND AVAILABLE COMMANDS
 
      re.pl:013:0> #nas -noout show int status | incl 14
      re.pl:014:0>
-
-  The Quoted (interpolated) Command operator
-    Let's say you want to run a command on your network device, and store
-    the results of that in an array. So far we've only seen how to use
-    *either* Perl mode *or* NAS CLI mode. The Quoted (interpolated) Command
-    operator is a convenience feature to help you out in this situation.
-
-    This operator is just like the other Perl quote-like operators such as
-    "q{}", "qx{}", and "qq{}", except that it is "qc{}" (for Quoted
-    Command). The same rules apply for substituting the curly brace
-    characters as do for the other Perl quote-like operators, which is
-    handy. Here is an example:
-
-     re.pl:015:0> my @output = qc{ show int status }
 
   Command results cache
     This module will store the output from all Perl and network device
@@ -207,9 +233,14 @@ FEATURES AND AVAILABLE COMMANDS
  
      re.pl:019:0> 
 
+  Additionally loaded modules
+    Currently the File::Slurp module is loaded by this plugin, if available.
+    It provides the "read_file" and "write_file" functions which are
+    extremely useful for dumping data from a network device (such as files
+    on flash memory). For further details pleae see the manual page for that
+    module.
+
 TODO
-    Fix command output, as it suffers from the 'stringified list indent'
-    issue.
     Currently no way to specify the "Net::Appliance::Session" Transport when
     using the connect macro.
     There's also no way to specify the NAS Phrasebook, which means it
@@ -221,6 +252,9 @@ REQUIREMENTS
 
     Devel::REPL
     Net::Appliance::Session
+
+    To run the bundled "/usr/bin/nsh" program, you'll need the IO::Prompt
+    module.
 
 AUTHOR
     Oliver Gorwits "<oliver.gorwits@oucs.ox.ac.uk>"
