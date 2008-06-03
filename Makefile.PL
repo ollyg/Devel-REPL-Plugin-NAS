@@ -19,5 +19,5 @@ WriteMakefile(
     dist        => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean       => { FILES => 'Devel-REPL-Plugin-NAS-*' },
     realclean   => { FILES => 'Makefile.old' },
-    EXE_FILES   => [ 'usr/bin/nas' ],
+    EXE_FILES   => [ 'usr/bin/nsh' ],
 );
