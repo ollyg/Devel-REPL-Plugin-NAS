@@ -1,7 +1,7 @@
 package Devel::REPL::Plugin::NAS;
 use Devel::REPL::Plugin;
 
-our $VERSION = 0.0601;
+our $VERSION = 0.0602;
 # $Id$
 
 use namespace::clean except => ['meta'];
@@ -374,7 +374,7 @@ Devel::REPL::Plugin::NAS - Add Perl to your network devices' command line interf
 
 =head1 VERSION
 
-This document refers to version 0.0601 of Devel::REPL::Plugin::NAS
+This document refers to version 0.0602 of Devel::REPL::Plugin::NAS
 
 =head1 WARNING
 
@@ -546,7 +546,7 @@ command output and munge it in Perl, whilst keeping the remote session open.
 =head2 One-off commands in an alternate mode
 
 If you're in NAS CLI mode, and you want to run a quick bit of Perl (remember,
-all lexical variable persist, which is handy), then use the C<#perl> macro:
+all lexical variables persist, which is handy), then use the C<#perl> macro:
 
  TEST_3750# #perl print "Hello again, World";
  Hello again, World
@@ -576,9 +576,9 @@ reference to I<that> array gets stored in the cache.
 
 If you'd prefer to have the output from a network device command stored as one
 big scalar (all the lines joined together), then this is possible via the
-C<#nas> macro, by adding the C<-array> flag, like so:
+C<#nas> macro, by adding the C<-scalar> flag, like so:
 
- re.pl:016:0> #nas -array show int status
+ re.pl:016:0> #nas -scalar show int status
 
 The output cache itself, including all Perl and NAS CLI mode output, is
 available via the C<< $_REPL->output_cache >> array reference. The most recent

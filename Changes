@@ -1,3 +1,9 @@
+libdevel-repl-plugin-nas-perl (0.0602-1) unstable; urgency=low
+
+  * Minor doc fix, said -array instead of -scalar
+
+ -- Oliver Gorwits <oliver.gorwits@oucs.ox.ac.uk>  Tue,  3 Jun 2008 23:54:16 +0100
+
 libdevel-repl-plugin-nas-perl (0.0601-1) unstable; urgency=low
 
   * Added program 'nsh' which is an ssh replacement using this module

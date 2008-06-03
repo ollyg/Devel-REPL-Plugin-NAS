@@ -3,7 +3,7 @@ NAME
     line interfaces
 
 VERSION
-    This document refers to version 0.0601 of Devel::REPL::Plugin::NAS
+    This document refers to version 0.0602 of Devel::REPL::Plugin::NAS
 
 WARNING
     This is an *ALPHA RELEASE*. I'd really appreciate any bug reports; you
@@ -174,7 +174,7 @@ FEATURES AND AVAILABLE COMMANDS
 
   One-off commands in an alternate mode
     If you're in NAS CLI mode, and you want to run a quick bit of Perl
-    (remember, all lexical variable persist, which is handy), then use the
+    (remember, all lexical variables persist, which is handy), then use the
     "#perl" macro:
 
      TEST_3750# #perl print "Hello again, World";
@@ -204,9 +204,9 @@ FEATURES AND AVAILABLE COMMANDS
 
     If you'd prefer to have the output from a network device command stored
     as one big scalar (all the lines joined together), then this is possible
-    via the "#nas" macro, by adding the "-array" flag, like so:
+    via the "#nas" macro, by adding the "-scalar" flag, like so:
 
-     re.pl:016:0> #nas -array show int status
+     re.pl:016:0> #nas -scalar show int status
 
     The output cache itself, including all Perl and NAS CLI mode output, is
     available via the "$_REPL->output_cache" array reference. The most
@@ -250,8 +250,9 @@ REQUIREMENTS
     Other than the standard contents of the Perl distribution, you will
     need:
 
-    Devel::REPL
-    Net::Appliance::Session
+    *   Devel::REPL
+
+    *   Net::Appliance::Session >= 1.23
 
     To run the bundled "/usr/bin/nsh" program, you'll need the IO::Prompt
     module.
