@@ -4,6 +4,8 @@ perl_version '5.008001';
 name        'Devel-REPL-Plugin-NAS';
 all_from    'lib/Devel/REPL/Plugin/NAS.pm';
 
+install_script 'nsh';
+
 requires    'Devel::REPL' => 0;
 requires    'Net::Appliance::Session' => 1.23;
 

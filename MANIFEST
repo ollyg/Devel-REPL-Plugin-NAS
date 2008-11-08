@@ -16,4 +16,4 @@ META.yml
 README
 t/load_core.t
 t/pod.t
-usr/bin/nsh
+script/nsh
