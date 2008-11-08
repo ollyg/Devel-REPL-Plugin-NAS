@@ -1,6 +1,9 @@
 package Devel::REPL::Plugin::NAS;
-use Devel::REPL::Plugin;
+
 use strict;
+use warnings FATAL => 'all';
+
+use Devel::REPL::Plugin;
 
 our $VERSION = '0.0701';
 $VERSION = eval $VERSION; # numify for warning-free dev releases
