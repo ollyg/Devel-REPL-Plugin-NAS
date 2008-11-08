@@ -1,3 +1,11 @@
+libdevel-repl-plugin-nas-perl (0.0701-1) UNRELEASED; urgency=low
+
+  * Move to Module::Install
+  * Update License to be same terms as Perl
+  * Add basic load test
+
+ -- Oliver Gorwits <oliver.gorwits@oucs.ox.ac.uk>  Sat,  8 Nov 2008 16:09:37 +0000
+
 libdevel-repl-plugin-nas-perl (0.0602-1) unstable; urgency=low
 
   * Minor doc fix, said -array instead of -scalar
